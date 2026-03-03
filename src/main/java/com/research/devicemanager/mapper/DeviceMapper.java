@@ -6,6 +6,8 @@ import com.research.devicemanager.model.Device;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface DeviceMapper {
 
@@ -14,4 +16,6 @@ public interface DeviceMapper {
     Device toEntity(DeviceRequestDTO dto);
 
     DeviceResponseDTO toDTO(Device device);
+
+    List<DeviceResponseDTO> toDTOs(List<Device> devices);
 }
