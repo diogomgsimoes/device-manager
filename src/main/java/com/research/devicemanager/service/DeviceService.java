@@ -27,8 +27,8 @@ public class DeviceService {
     public DeviceResponseDTO createDevice(DeviceRequestDTO device) {
         // TODO: validate if exists first
         Device request = DeviceMapper.INSTANCE.toEntity(device);
-        Device deviceEntity = deviceRepository.save(request);
-        return DeviceMapper.INSTANCE.toDTO(deviceEntity);
+        deviceRepository.save(request);
+        return DeviceMapper.INSTANCE.toDTO(request);
     }
 
     public List<DeviceResponseDTO> findDevices(UUID id, String brand, String state) {

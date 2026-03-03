@@ -8,10 +8,18 @@ public enum State {
     IN_USE("in-use"),
     INACTIVE("inactive");
 
-    private final String name;
+    private final String value;
 
-    State(String name) {
-        this.name = name;
+    State(String value) {
+        this.value = value;
     }
 
+    public static State fromValue(String value) {
+        for (State state : values()) {
+            if (state.value.equalsIgnoreCase(value)) {
+                return state;
+            }
+        }
+        throw new IllegalArgumentException("Invalid state: " + value);
+    }
 }
