@@ -8,3 +8,9 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [correlation-id:%X{correlationId}] - %msg%n"
+  level:
+    root: info

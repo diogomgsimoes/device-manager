@@ -42,13 +42,13 @@ class DeviceServiceTest {
         savedDevice.setBrand(dto.getBrand());
         savedDevice.setState(State.AVAILABLE);
 
-        when(deviceRepository.save(any(Device.class))).thenReturn(savedDevice);
+        when(deviceRepository.saveAndFlush(any(Device.class))).thenReturn(savedDevice);
 
         var result = deviceService.createDevice(dto);
 
         assertEquals(dto.getName(), result.getName());
         assertEquals(dto.getBrand(), result.getBrand());
-        verify(deviceRepository, times(1)).save(any(Device.class));
+        verify(deviceRepository, times(1)).saveAndFlush(any(Device.class));
     }
 
     @Test
