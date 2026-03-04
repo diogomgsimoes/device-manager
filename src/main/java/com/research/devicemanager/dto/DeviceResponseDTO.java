@@ -2,13 +2,14 @@ package com.research.devicemanager.dto;
 
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 public class DeviceResponseDTO {
-    private String id;
+    private UUID id;
     private String name;
     private String brand;
     private String state;
-    private Date creationDate;
+    private LocalDateTime creationDate;
 }

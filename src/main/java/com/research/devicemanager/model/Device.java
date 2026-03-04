@@ -5,7 +5,7 @@ import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -26,5 +26,5 @@ public class Device {
 
     @CreatedDate
     @Column(updatable = false)
-    private Date creationDate;
+    private LocalDateTime creationDate;
 }

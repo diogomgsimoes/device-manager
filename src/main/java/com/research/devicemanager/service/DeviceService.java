@@ -4,6 +4,7 @@ import com.research.devicemanager.dto.DeviceRequestDTO;
 import com.research.devicemanager.dto.DeviceResponseDTO;
 import com.research.devicemanager.dto.UpdateDeviceRequestDTO;
 import com.research.devicemanager.exception.DeviceNotFoundException;
+import com.research.devicemanager.exception.ResourceAlreadyExistsException;
 import com.research.devicemanager.exception.StateConflictException;
 import com.research.devicemanager.mapper.DeviceMapper;
 import com.research.devicemanager.model.Device;
@@ -12,6 +13,7 @@ import com.research.devicemanager.repository.DeviceRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +31,7 @@ public class DeviceService {
         this.deviceRepository = deviceRepository;
     }
 
+    @Transactional
     public DeviceResponseDTO createDevice(DeviceRequestDTO deviceRequestDTO) {
         log.info("Creating device with name={}, brand={}", deviceRequestDTO.getName(), deviceRequestDTO.getBrand());
 
@@ -39,7 +42,7 @@ public class DeviceService {
             log.info("Device with name={} and brand={} already exists",
                     deviceRequestDTO.getName(),
                     deviceRequestDTO.getBrand());
-            throw new StateConflictException("Device with name " + deviceRequestDTO.getName() + " and brand " +
+            throw new ResourceAlreadyExistsException("Device with name " + deviceRequestDTO.getName() + " and brand " +
                     deviceRequestDTO.getBrand() + " already exist");
         }
 
@@ -50,34 +53,39 @@ public class DeviceService {
         return DeviceMapper.INSTANCE.toDTO(deviceEntity);
     }
 
-    public List<DeviceResponseDTO> findDevices(UUID id, String brand, String state) {
-        log.info("Searching devices with filters: id={}, brand={}, state={}", id, brand, state);
+    public DeviceResponseDTO findDeviceById(UUID id) {
+        log.info("Finding device with id={}", id);
+
+        Optional<Device> optionalDevice = deviceRepository.findById(id);
+        if (optionalDevice.isEmpty()) {
+            log.warn("Device with id={} not found", id);
+            throw new DeviceNotFoundException(id);
+        }
+
+        return DeviceMapper.INSTANCE.toDTO(optionalDevice.get());
+    }
+
+    public List<DeviceResponseDTO> findDevices(String name, String brand) {
+        log.info("Searching devices with filters: name={}, brand={}", name, brand);
 
         Specification<Device> spec = null;
-        if (id != null) {
+        if (name != null) {
             spec = (root, query, cb) ->
-                    cb.equal(root.get("id"), id);
+                    cb.equal(root.get("name"), name);
         }
         if (brand != null) {
             Specification<Device> brandSpec = (root, query, cb) ->
-                    cb.equal(root.get("brand"), brand);
+                    cb.equal(root.get("state"), brand);
             spec = (spec == null) ? brandSpec : spec.and(brandSpec);
-        }
-        if (state != null) {
-            Specification<Device> stateSpec = (root, query, cb) ->
-                    cb.equal(root.get("state"), state);
-            spec = (spec == null) ? stateSpec : spec.and(stateSpec);
         }
 
         List<Device> devices = (spec == null) ? deviceRepository.findAll() : deviceRepository.findAll(spec);
-        if (devices.isEmpty() && id != null) {
-            log.warn("No devices found with filters: id={}, brand={}, state={}", id, brand, state);
-            throw new DeviceNotFoundException(id);
-        }
+        log.info("Found {} devices found with filters: name={}, brand={}", devices.size(), name, brand);
 
         return DeviceMapper.INSTANCE.toDTOs(devices);
     }
 
+    @Transactional
     public DeviceResponseDTO updateDevice(UUID id, UpdateDeviceRequestDTO updateDeviceRequestDTO) {
         log.info("Updating device with id={}", id);
 
@@ -103,12 +111,12 @@ public class DeviceService {
         }
 
         if (updateDeviceRequestDTO.getState() != null) {
-            if (!canTransition(existingDevice.getState(), State.fromValue(updateDeviceRequestDTO.getState()))) {
+            if (!canTransition(existingDevice.getState(), updateDeviceRequestDTO.getState())) {
                 log.warn("Device transition is not allowed");
                 throw new StateConflictException("Device state cannot transition from " + existingDevice.getState()
                         + " to " + updateDeviceRequestDTO.getState());
             } else {
-                existingDevice.setState(State.valueOf(updateDeviceRequestDTO.getState()));
+                existingDevice.setState(updateDeviceRequestDTO.getState());
             }
         }
 
@@ -118,6 +126,7 @@ public class DeviceService {
         return DeviceMapper.INSTANCE.toDTO(existingDevice);
     }
 
+    @Transactional
     public void deleteDevice(UUID id) {
         log.info("Deleting device with id={}", id);
 

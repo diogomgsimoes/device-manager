@@ -3,6 +3,7 @@ package com.research.devicemanager.service;
 import com.research.devicemanager.dto.DeviceRequestDTO;
 import com.research.devicemanager.dto.UpdateDeviceRequestDTO;
 import com.research.devicemanager.exception.DeviceNotFoundException;
+import com.research.devicemanager.exception.ResourceAlreadyExistsException;
 import com.research.devicemanager.exception.StateConflictException;
 import com.research.devicemanager.model.Device;
 import com.research.devicemanager.model.State;
@@ -34,7 +35,7 @@ class DeviceServiceTest {
         DeviceRequestDTO dto = new DeviceRequestDTO();
         dto.setName("iPhone");
         dto.setBrand("Apple");
-        dto.setState("available");
+        dto.setState(State.AVAILABLE);
 
         Device savedDevice = new Device();
         savedDevice.setId(UUID.randomUUID());
@@ -52,6 +53,50 @@ class DeviceServiceTest {
     }
 
     @Test
+    void createDevice_whenBrandAndNameCombinationExists_shouldThrowResourceAlreadyExistsException() {
+        DeviceRequestDTO dto = new DeviceRequestDTO();
+        dto.setName("iPhone");
+        dto.setBrand("Apple");
+        dto.setState(State.AVAILABLE);
+
+        Device savedDevice = new Device();
+        savedDevice.setId(UUID.randomUUID());
+        savedDevice.setName(dto.getName());
+        savedDevice.setBrand(dto.getBrand());
+        savedDevice.setState(State.AVAILABLE);
+
+        when(deviceRepository.findByNameAndBrand(any(String.class), any(String.class)))
+                .thenReturn(Optional.of(savedDevice));
+
+        assertThrows(ResourceAlreadyExistsException.class, () ->deviceService.createDevice(dto));
+    }
+
+    @Test
+    void findDeviceById_whenDeviceExists_shouldReturnDTO() {
+        UUID id = UUID.randomUUID();
+
+        Device device = new Device();
+        device.setId(id);
+        device.setName("iPhone");
+        device.setBrand("Apple");
+        device.setState(State.AVAILABLE);
+
+        when(deviceRepository.findById(device.getId())).thenReturn(Optional.of(device));
+
+        var result = deviceService.findDeviceById(id);
+
+        assertEquals(id, result.getId());
+        verify(deviceRepository, times(1)).findById(any(UUID.class));
+    }
+
+    @Test
+    void findDeviceById_whenDeviceDoesNotExist_shouldThrowNotFoundException() {
+        when(deviceRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+
+        assertThrows(DeviceNotFoundException.class, () -> deviceService.findDeviceById(UUID.randomUUID()));
+    }
+
+    @Test
     void findDevices_whenNoFiltersProvided_shouldCallFindAll() {
         Device device = new Device();
         device.setId(UUID.randomUUID());
@@ -61,7 +106,7 @@ class DeviceServiceTest {
 
         when(deviceRepository.findAll()).thenReturn(List.of(device));
 
-        var result = deviceService.findDevices(null, null, null);
+        var result = deviceService.findDevices(null, null);
 
         assertEquals(1, result.size());
         verify(deviceRepository, times(1)).findAll();
@@ -69,27 +114,16 @@ class DeviceServiceTest {
     }
 
     @Test
-    void findDevices_whenIdIsProvidedAndExists_shouldReturnDevice() {
-        UUID id = UUID.randomUUID();
+    void findDevices_whenNameIsProvided_shouldCallFindAllWithSpec() {
         Device device = new Device();
-        device.setId(id);
-        device.setName("Pixel");
-        device.setBrand("Google");
-        device.setState(State.AVAILABLE);
+        device.setName("iPhone");
 
         when(deviceRepository.findAll(any(Specification.class))).thenReturn(List.of(device));
 
-        var results = deviceService.findDevices(id, null, null);
-        assertEquals(1, results.size());
-        assertEquals("Pixel", results.getFirst().getName());
-    }
+        var result = deviceService.findDevices("iPhone", null);
 
-    @Test
-    void findDevices_whenIdIsProvidedButDoesNotExist_shouldThrowNotFoundException() {
-        UUID id = UUID.randomUUID();
-        when(deviceRepository.findAll()).thenReturn(List.of());
-
-        assertThrows(DeviceNotFoundException.class, () -> deviceService.findDevices(id, null, null));
+        assertEquals(1, result.size());
+        verify(deviceRepository, times(1)).findAll(any(Specification.class));
     }
 
     @Test
@@ -99,30 +133,17 @@ class DeviceServiceTest {
 
         when(deviceRepository.findAll(any(Specification.class))).thenReturn(List.of(device));
 
-        var result = deviceService.findDevices(null, "Apple", null);
+        var result = deviceService.findDevices(null, "Apple");
 
         assertEquals(1, result.size());
         verify(deviceRepository, times(1)).findAll(any(Specification.class));
     }
 
     @Test
-    void findDevices_whenStateIsProvided_shouldCallFindAllWithSpec() {
-        Device device = new Device();
-        device.setState(State.AVAILABLE);
-
-        when(deviceRepository.findAll(any(Specification.class))).thenReturn(List.of(device));
-
-        var result = deviceService.findDevices(null, null, "available");
-
-        assertEquals(1, result.size());
-        verify(deviceRepository, times(1)).findAll(any(Specification.class));
-    }
-
-    @Test
-    void findDevices_whenBrandIsProvidedButDoesNotExists_shouldReturnEmptyList() {
+    void findDevices_whenNameIsProvidedButDoesNotExists_shouldReturnEmptyList() {
         when(deviceRepository.findAll(any(Specification.class))).thenReturn(List.of());
 
-        var result = deviceService.findDevices(null, "NonExistingBrand", null);
+        var result = deviceService.findDevices("NonExistingBrand", null);
 
         assertTrue(result.isEmpty());
     }
@@ -133,15 +154,16 @@ class DeviceServiceTest {
 
         Device device = new Device();
         device.setId(id);
+        device.setName("iPhone");
         device.setBrand("Apple");
         device.setState(State.AVAILABLE);
 
         when(deviceRepository.findAll(any(Specification.class))).thenReturn(List.of(device));
 
-        var result = deviceService.findDevices(id, "Apple", "AVAILABLE");
+        var result = deviceService.findDevices("iPhone", "Apple");
 
         assertEquals(1, result.size());
-        assertEquals(id.toString(), result.getFirst().getId());
+        assertEquals(id, result.getFirst().getId());
     }
 
     @Test
@@ -160,7 +182,7 @@ class DeviceServiceTest {
         UpdateDeviceRequestDTO dto = new UpdateDeviceRequestDTO();
         dto.setName("NewName");
         dto.setBrand("NewBrand");
-        dto.setState("INACTIVE");
+        dto.setState(State.INACTIVE);
 
         var result = deviceService.updateDevice(id, dto);
 
@@ -227,7 +249,7 @@ class DeviceServiceTest {
         when(deviceRepository.save(any(Device.class))).thenReturn(existing);
 
         UpdateDeviceRequestDTO dto = new UpdateDeviceRequestDTO();
-        dto.setState("AVAILABLE");
+        dto.setState(State.AVAILABLE);
 
         var result = deviceService.updateDevice(id, dto);
 
@@ -245,7 +267,7 @@ class DeviceServiceTest {
         when(deviceRepository.findById(id)).thenReturn(Optional.of(existing));
 
         UpdateDeviceRequestDTO dto = new UpdateDeviceRequestDTO();
-        dto.setState("IN_USE");
+        dto.setState(State.IN_USE);
 
         assertThrows(StateConflictException.class, () -> deviceService.updateDevice(id, dto));
     }

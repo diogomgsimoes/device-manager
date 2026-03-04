@@ -1,5 +1,6 @@
 package com.research.devicemanager.dto;
 
+import com.research.devicemanager.model.State;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -15,5 +16,5 @@ public class UpdateDeviceRequestDTO {
 
     @Pattern(regexp = "available|in-use|inactive", flags = Pattern.Flag.CASE_INSENSITIVE,
             message = "State must be one of: available, in-use, inactive")
-    private String state;
+    private State state;
 }

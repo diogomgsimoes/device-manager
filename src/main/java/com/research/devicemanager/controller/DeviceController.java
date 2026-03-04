@@ -3,6 +3,7 @@ package com.research.devicemanager.controller;
 import com.research.devicemanager.dto.DeviceRequestDTO;
 import com.research.devicemanager.dto.DeviceResponseDTO;
 import com.research.devicemanager.dto.UpdateDeviceRequestDTO;
+import com.research.devicemanager.model.State;
 import com.research.devicemanager.service.DeviceService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -28,12 +29,16 @@ public class DeviceController {
         return new ResponseEntity<>(deviceResponse, HttpStatus.CREATED);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<DeviceResponseDTO> getDeviceById(@PathVariable UUID id) {
+        return ResponseEntity.ok(deviceService.findDeviceById(id));
+    }
+
     @GetMapping
-    public List<DeviceResponseDTO> getDevices(
-            @RequestParam(required = false) UUID id,
-            @RequestParam(required = false) String brand,
-            @RequestParam(required = false) String state) {
-        return deviceService.findDevices(id, brand, state);
+    public ResponseEntity<List<DeviceResponseDTO>> getDevices(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String brand) {
+        return ResponseEntity.ok(deviceService.findDevices(name, brand));
     }
 
     @PatchMapping("/{id}")
@@ -41,7 +46,7 @@ public class DeviceController {
             @PathVariable UUID id,
             @RequestBody @Valid UpdateDeviceRequestDTO device) {
         DeviceResponseDTO deviceResponse = deviceService.updateDevice(id, device);
-        return new ResponseEntity<>(deviceResponse, HttpStatus.OK);
+        return ResponseEntity.ok(deviceResponse);
     }
 
     @DeleteMapping("/{id}")

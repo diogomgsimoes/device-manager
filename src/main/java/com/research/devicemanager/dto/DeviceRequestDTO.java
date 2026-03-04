@@ -1,7 +1,7 @@
 package com.research.devicemanager.dto;
 
+import com.research.devicemanager.model.State;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -17,6 +17,5 @@ public class DeviceRequestDTO {
     private String brand;
 
     @NotBlank(message = "State is required")
-    @Pattern(regexp = "AVAILABLE|IN_USE|INACTIVE", message = "State must be one of: AVAILABLE, IN_USE, INACTIVE")
-    private String state;
+    private State state;
 }
