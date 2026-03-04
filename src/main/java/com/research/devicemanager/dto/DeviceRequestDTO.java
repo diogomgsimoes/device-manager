@@ -17,7 +17,6 @@ public class DeviceRequestDTO {
     private String brand;
 
     @NotBlank(message = "State is required")
-    @Pattern(regexp = "available|in-use|inactive", flags = Pattern.Flag.CASE_INSENSITIVE,
-            message = "State must be one of: available, in-use, inactive")
+    @Pattern(regexp = "AVAILABLE|IN_USE|INACTIVE", message = "State must be one of: AVAILABLE, IN_USE, INACTIVE")
     private String state;
 }

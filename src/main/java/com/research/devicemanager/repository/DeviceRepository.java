@@ -4,9 +4,9 @@ import com.research.devicemanager.model.Device;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface DeviceRepository extends JpaRepository<Device, UUID>, JpaSpecificationExecutor<Device> {
-
-
+    Optional<Device> findByNameAndBrand(String name, String brand);
 }

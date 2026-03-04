@@ -33,7 +33,6 @@ public class DeviceController {
             @RequestParam(required = false) UUID id,
             @RequestParam(required = false) String brand,
             @RequestParam(required = false) String state) {
-        // TODO: validate UUID here and in others
         return deviceService.findDevices(id, brand, state);
     }
 

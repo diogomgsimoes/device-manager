@@ -28,7 +28,12 @@ public class DeviceService {
     }
 
     public DeviceResponseDTO createDevice(DeviceRequestDTO device) {
-        // TODO: validate if exists first
+        Optional<Device> deviceOptional = deviceRepository.findByNameAndBrand(device.getName(), device.getBrand());
+        if (deviceOptional.isPresent()) {
+            throw new StateConflictException("Device with name " + device.getName() + " and brand " +
+                    device.getBrand() + " already exist");
+        }
+
         Device request = DeviceMapper.INSTANCE.toEntity(device);
         deviceRepository.save(request);
         return DeviceMapper.INSTANCE.toDTO(request);
@@ -57,7 +62,7 @@ public class DeviceService {
                 : deviceRepository.findAll(spec);
 
         if (devices.isEmpty() && id != null) {
-            throw new DeviceNotFoundException("Device with id " + id + " not found");
+            throw new DeviceNotFoundException(id);
         }
 
         return DeviceMapper.INSTANCE.toDTOs(devices);
@@ -66,7 +71,7 @@ public class DeviceService {
     public DeviceResponseDTO updateDevice(UUID id, UpdateDeviceRequestDTO updatedDevice) {
         Optional<Device> existingDeviceOptional = deviceRepository.findById(id);
         if (existingDeviceOptional.isEmpty()) {
-            throw new DeviceNotFoundException("Device with id " + id + " not found");
+            throw new DeviceNotFoundException(id);
         }
 
         Device existingDevice = existingDeviceOptional.get();
@@ -101,7 +106,7 @@ public class DeviceService {
         Optional<Device> deviceOptional = deviceRepository.findById(id);
 
         if (deviceOptional.isEmpty()) {
-            throw new DeviceNotFoundException("Device with id " + id + " not found");
+            throw new DeviceNotFoundException(id);
         }
 
         Device device = deviceOptional.get();
