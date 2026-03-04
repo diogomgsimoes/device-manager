@@ -4,6 +4,7 @@ import com.research.devicemanager.dto.DeviceRequestDTO;
 import com.research.devicemanager.dto.DeviceResponseDTO;
 import com.research.devicemanager.dto.UpdateDeviceRequestDTO;
 import com.research.devicemanager.exception.DeviceNotFoundException;
+import com.research.devicemanager.exception.StateConflictException;
 import com.research.devicemanager.mapper.DeviceMapper;
 import com.research.devicemanager.model.Device;
 import com.research.devicemanager.model.State;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static com.research.devicemanager.model.State.canTransition;
 
 @Service
 public class DeviceService {
@@ -67,22 +70,26 @@ public class DeviceService {
         }
 
         Device existingDevice = existingDeviceOptional.get();
-        // Maybe inactive devices should also not be updated, but following requirement here
-        if (existingDevice.getState().equals(State.IN_USE)) {
-            throw new DeviceNotFoundException("Device with id " + id + " is in-use and cannot be updated");
-        }
+        if (existingDevice.getState().equals(State.IN_USE) &&
+                (updatedDevice.getName() != null || updatedDevice.getBrand() != null)) {
+            throw new StateConflictException("Device is in-use and it's name and/or brand cannot be updated");
+        } else {
+            if (updatedDevice.getName() != null) {
+                existingDevice.setName(updatedDevice.getName());
+            }
 
-        if (updatedDevice.getName() != null) {
-            existingDevice.setName(updatedDevice.getName());
-        }
-
-        if (updatedDevice.getBrand() != null) {
-            existingDevice.setBrand(updatedDevice.getBrand());
+            if (updatedDevice.getBrand() != null) {
+                existingDevice.setBrand(updatedDevice.getBrand());
+            }
         }
 
         if (updatedDevice.getState() != null) {
-            // TODO: this should have a state-machine type of validation
-            existingDevice.setState(State.valueOf(updatedDevice.getState()));
+            if (!canTransition(existingDevice.getState(), State.fromValue(updatedDevice.getState()))) {
+                throw new StateConflictException("Device state cannot transition from " + existingDevice.getState()
+                        + " to " + updatedDevice.getState());
+            } else {
+                existingDevice.setState(State.valueOf(updatedDevice.getState()));
+            }
         }
 
         deviceRepository.save(existingDevice);
@@ -99,7 +106,7 @@ public class DeviceService {
 
         Device device = deviceOptional.get();
         if (device.getState().equals(State.IN_USE)) {
-            throw new DeviceNotFoundException("Device with id " + id + " is in-use and cannot be deleted");
+            throw new StateConflictException("Device with id " + id + " is in-use and cannot be deleted");
         }
 
         deviceRepository.delete(device);
