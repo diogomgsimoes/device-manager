@@ -75,7 +75,7 @@ class DeviceServiceTest {
         when(deviceRepository.findByNameAndBrand(any(String.class), any(String.class)))
                 .thenReturn(Optional.of(savedDevice));
 
-        assertThrows(ResourceAlreadyExistsException.class, () ->deviceService.createDevice(dto));
+        assertThrows(ResourceAlreadyExistsException.class, () -> deviceService.createDevice(dto));
     }
 
     @Test
@@ -196,7 +196,6 @@ class DeviceServiceTest {
         assertEquals("NewName", result.getName());
         assertEquals("NewBrand", result.getBrand());
         assertEquals("INACTIVE", result.getState());
-
     }
 
     @Test

@@ -1,7 +1,6 @@
 package com.research.devicemanager.dto;
 
 import com.research.devicemanager.model.State;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 

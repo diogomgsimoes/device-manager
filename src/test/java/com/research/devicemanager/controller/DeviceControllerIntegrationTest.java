@@ -14,10 +14,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import java.util.UUID;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -31,10 +33,10 @@ class DeviceControllerIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private String createdDeviceId;
-
     @Autowired
     private DeviceRepository deviceRepository;
+
+    private String createdDeviceId;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -93,7 +95,7 @@ class DeviceControllerIntegrationTest {
 
     @Test
     void getDeviceById_whenDeviceDoesNotExist_shouldReturn404() throws Exception {
-        mockMvc.perform(get("/api/devices/{id}", "00000000-0000-0000-0000-000000000000"))
+        mockMvc.perform(get("/api/devices/{id}", UUID.randomUUID()))
                 .andExpect(status().isNotFound());
     }
 
@@ -134,7 +136,7 @@ class DeviceControllerIntegrationTest {
     }
 
     @Test
-    void deleteDevice_shouldReturn204() throws Exception {
+    void deleteDevice_whenDeviceExists_shouldReturn204() throws Exception {
         mockMvc.perform(delete("/api/devices/{id}", createdDeviceId)).andExpect(status().isNoContent());
     }
 
@@ -147,5 +149,11 @@ class DeviceControllerIntegrationTest {
                 .content(objectMapper.writeValueAsString(deviceInUse)));
 
         mockMvc.perform(delete("/api/devices/{id}", createdDeviceId)).andExpect(status().isConflict());
+    }
+
+    @Test
+    void deleteDevice_whenDeviceDoesNotExist_shouldReturn404() throws Exception {
+        mockMvc.perform(delete("/api/devices/{id}", UUID.randomUUID()))
+                .andExpect(status().isNotFound());
     }
 }

@@ -3,6 +3,7 @@ package com.research.devicemanager.controller;
 import com.research.devicemanager.dto.DeviceRequestDTO;
 import com.research.devicemanager.dto.DeviceResponseDTO;
 import com.research.devicemanager.dto.UpdateDeviceRequestDTO;
+import com.research.devicemanager.exception.ErrorResponse;
 import com.research.devicemanager.model.State;
 import com.research.devicemanager.service.DeviceService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,8 +16,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponse;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +32,8 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/devices")
 @Tag(name = "Devices", description = "Persist and manage devices")
-public class DeviceController {
+public class
+DeviceController {
 
     private final DeviceService deviceService;
 
@@ -94,8 +103,7 @@ public class DeviceController {
 
     @Operation(summary = "Delete a device", description = "Devices in IN_USE state cannot be deleted.")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Device deleted successfully",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "204", description = "Device deleted successfully", content = @Content),
             @ApiResponse(responseCode = "404", description = "Device not found",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "409", description = "Device is IN_USE and cannot be deleted",
