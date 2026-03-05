@@ -14,7 +14,5 @@ public class UpdateDeviceRequestDTO {
     @Size(max = 50, message = "Brand cannot exceed 50 characters")
     private String brand;
 
-    @Pattern(regexp = "available|in-use|inactive", flags = Pattern.Flag.CASE_INSENSITIVE,
-            message = "State must be one of: available, in-use, inactive")
     private State state;
 }
