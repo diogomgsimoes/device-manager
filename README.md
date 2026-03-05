@@ -36,25 +36,29 @@ Attempting an invalid transition returns a `409 Conflict`.
 
 ---
 
-## Running the Application (with docker and Postgres DB)
+## Running the Application
+
+First, build the jar with:
+
+```bash
+./mvnw clean package
+```
 
 ### With Docker and PostgresDB
 
 ```bash
-docker compose up
+docker compose up --build
 ```
 
-The API will be available at `http://localhost:8080`.
-
-## Locally (with in-memory H2 DB)
+### Locally (with in-memory H2 DB)
 
 If you don't want to run Docker, the application includes an H2 in-memory database profile for local development.
 
-### 1. Execute spring-boot:run
-
 ```bash
-./mvnw spring-boot:run
+./mvnw spring-boot:run -Dspring.profiles.active=local
 ```
+
+In both cases, the API will be available at `http://localhost:8080`.
 
 ---
 
@@ -81,6 +85,8 @@ http://localhost:8080/v3/api-docs
 | `GET`    | `/api/devices/{id}`   | Get a device by ID                 |
 | `PATCH`  | `/api/devices/{id}`   | Partially update a device          |
 | `DELETE` | `/api/devices/{id}`   | Delete a device                    |
+
+Additionally, the application exposes an health check at `GET /actuator/health`.
 
 ---
 

@@ -1,9 +1,4 @@
 spring:
-  datasource:
-    url: jdbc:h2:mem:device_db;DB_CLOSE_DELAY=-1
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -14,3 +9,9 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [correlation-id:%X{correlationId}] - %msg%n"
   level:
     root: info
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
