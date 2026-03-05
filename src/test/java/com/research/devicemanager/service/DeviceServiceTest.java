@@ -193,6 +193,17 @@ class DeviceServiceTest {
     }
 
     @Test
+    void updateDevice_whenDeviceDoesNotExist_shouldThrowNotFoundException() {
+        UpdateDeviceRequestDTO dto = new UpdateDeviceRequestDTO();
+        dto.setName("NewName");
+        dto.setBrand("NewBrand");
+
+        when(deviceRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+
+        assertThrows(DeviceNotFoundException.class, () -> deviceService.updateDevice(UUID.randomUUID(), dto));
+    }
+
+    @Test
     void updateDevice_whenNotInUse_shouldUpdateBrandAndName() {
         UUID id = UUID.randomUUID();
 

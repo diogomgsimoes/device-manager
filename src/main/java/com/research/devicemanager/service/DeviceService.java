@@ -75,7 +75,7 @@ public class DeviceService {
         }
         if (brand != null) {
             Specification<Device> brandSpec = (root, query, cb) ->
-                    cb.equal(root.get("state"), brand);
+                    cb.equal(root.get("brand"), brand);
             spec = (spec == null) ? brandSpec : spec.and(brandSpec);
         }
 
