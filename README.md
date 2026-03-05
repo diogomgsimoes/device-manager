@@ -127,3 +127,16 @@ The API returns consistent error responses across all endpoints:
 | `404`  | Device not found                              |
 | `409`  | Duplicate device or invalid state transition  |
 | `500`  | Unexpected server error                       |
+
+---
+
+## Next Steps / Improvements
+
+- Currently the GET endpoints return all devices at once. With too much volume, this would not scale. To address this, we could add pagination using Spring Data's `Pageable`.
+- The Schema is built by Hibernate due to `ddl-auto`. For better production-rediness we could replace it with a schema migration management system, such as Flyway
+- A bottom-up approach was followed where the code generates the API contract. An alternative would be to follow a contract-first model, where we would write the contract first and leverage tools such as the `OpenAPI generator plugin` to generate the controller interfaces from it.
+- Better auditing on the Device entity. On top of the already existing `creationDate`, we could also track who modified what and when.
+- Read endpoints could benefit from a caching mechanism (e.g., Redis) if volume and query frequency justifies it.
+- No AuthN/AuthZ, which could and should be added for product-ready software.
+- No resilience patterns. We could leverage `resilience4j` and implement retries, rate limiting, ...
+- We could have contract testing to verify dependant services are not affected by changes in this API.
