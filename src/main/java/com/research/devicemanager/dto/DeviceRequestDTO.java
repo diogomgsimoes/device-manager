@@ -16,6 +16,5 @@ public class DeviceRequestDTO {
     @Size(max = 50, message = "Brand cannot exceed 50 characters")
     private String brand;
 
-    @NotBlank(message = "State is required")
     private State state;
 }
