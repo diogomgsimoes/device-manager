@@ -3,6 +3,7 @@ package com.research.devicemanager.controller;
 import com.research.devicemanager.dto.DeviceRequestDTO;
 import com.research.devicemanager.dto.DeviceResponseDTO;
 import com.research.devicemanager.dto.UpdateDeviceRequestDTO;
+import com.research.devicemanager.model.State;
 import com.research.devicemanager.service.DeviceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -66,9 +67,9 @@ public class DeviceController {
     })
     @GetMapping
     public ResponseEntity<List<DeviceResponseDTO>> getDevices(
-            @Parameter(description = "Filter by name") @RequestParam(required = false) String name,
-            @Parameter(description = "Filter by brand") @RequestParam(required = false) String brand) {
-        return ResponseEntity.ok(deviceService.findDevices(name, brand));
+            @Parameter(description = "Filter by brand") @RequestParam(required = false) String brand,
+            @Parameter(description = "Filter by state") @RequestParam(required = false) State state) {
+        return ResponseEntity.ok(deviceService.findDevices(brand, state));
     }
 
     @Operation(summary = "Fully or partially update a device", description = "All fields are optional. " +

@@ -16,8 +16,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class DeviceServiceTest {
 
@@ -133,7 +140,7 @@ class DeviceServiceTest {
 
         when(deviceRepository.findAll(any(Specification.class))).thenReturn(List.of(device));
 
-        var result = deviceService.findDevices(null, "Apple");
+        var result = deviceService.findDevices("Apple", null);
 
         assertEquals(1, result.size());
         verify(deviceRepository, times(1)).findAll(any(Specification.class));
@@ -160,7 +167,7 @@ class DeviceServiceTest {
 
         when(deviceRepository.findAll(any(Specification.class))).thenReturn(List.of(device));
 
-        var result = deviceService.findDevices("iPhone", "Apple");
+        var result = deviceService.findDevices("iPhone", State.AVAILABLE);
 
         assertEquals(1, result.size());
         assertEquals(id, result.getFirst().getId());

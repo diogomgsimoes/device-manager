@@ -53,6 +53,7 @@ public class DeviceService {
         return DeviceMapper.INSTANCE.toDTO(deviceEntity);
     }
 
+    @Transactional(readOnly = true)
     public DeviceResponseDTO findDeviceById(UUID id) {
         log.info("Finding device with id={}", id);
 
@@ -65,22 +66,23 @@ public class DeviceService {
         return DeviceMapper.INSTANCE.toDTO(optionalDevice.get());
     }
 
-    public List<DeviceResponseDTO> findDevices(String name, String brand) {
-        log.info("Searching devices with filters: name={}, brand={}", name, brand);
+    @Transactional(readOnly = true)
+    public List<DeviceResponseDTO> findDevices(String brand, State state) {
+        log.info("Searching devices with filters: brand={}, state={}", brand, state);
 
         Specification<Device> spec = null;
-        if (name != null) {
-            spec = (root, query, cb) ->
-                    cb.equal(root.get("name"), name);
-        }
         if (brand != null) {
-            Specification<Device> brandSpec = (root, query, cb) ->
+            spec = (root, query, cb) ->
                     cb.equal(root.get("brand"), brand);
-            spec = (spec == null) ? brandSpec : spec.and(brandSpec);
+        }
+        if (state != null) {
+            Specification<Device> stateSpec = (root, query, cb) ->
+                    cb.equal(root.get("state"), state);
+            spec = (spec == null) ? stateSpec : spec.and(stateSpec);
         }
 
         List<Device> devices = (spec == null) ? deviceRepository.findAll() : deviceRepository.findAll(spec);
-        log.info("Found {} devices found with filters: name={}, brand={}", devices.size(), name, brand);
+        log.info("Found {} devices found with filters: brand={}, state={}", devices.size(), brand, state);
 
         return DeviceMapper.INSTANCE.toDTOs(devices);
     }
